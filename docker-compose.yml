@@ -1,0 +1,8 @@
+# hikabooru Discord bot — Coolify 用
+services:
+  hikabooru-discord-bot:
+    build: .
+    container_name: hikabooru-discord-bot
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
