@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { MarkovGenerator } from "./markov";
 import { getRandomMedia } from "./hikabooru";
+import { generateReply } from "./llm";
 
 const TOKEN = process.env.DISCORD_TOKEN || "";
 const MODEL_PATH = process.env.MARKOV_MODEL
@@ -49,9 +50,28 @@ client.on("messageCreate", async (msg) => {
   msg.channel.sendTyping().catch(() => {});
 
   try {
-    const text = markov.generate(200, 1);
+    // メンション部分を除去した本文
+    const userText = msg.content
+      .replace(new RegExp(`<@!?${client.user!.id}>`, "g"), "")
+      .trim();
+
+    let content: string;
+    if (userText) {
+      // 文章あり → LLMで内容に沿った回答
+      console.log(`[llm] "${userText.slice(0, 80)}"`);
+      try {
+        content = await generateReply(userText);
+        if (!content) throw new Error("empty LLM response");
+      } catch (err: any) {
+        console.error(`[llm error] ${err?.message || err} → fallback markov`);
+        content = markov.generate(200, 1).trim() || "…";
+      }
+    } else {
+      // 文章なし → マルコフ文
+      content = markov.generate(200, 1).trim() || "…";
+    }
+
     const media = await getRandomMedia();
-    const content = text.trim() ? text : "…";
 
     await msg.reply({
       content,
