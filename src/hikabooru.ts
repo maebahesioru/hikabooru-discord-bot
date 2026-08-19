@@ -3,7 +3,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-const BASE = "https://hikabooru.hikamer.f5.si";
+const BASE = "https://hikabooru.hikamers.app";
 const MAX_VIDEO_DURATION_SEC = 140; // Xと同じ制限（Discordにも適用）
 
 interface HikabooruPost {
